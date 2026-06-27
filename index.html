@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>身体信号自测 · 吕勇军·健康+保险</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            color: #333; line-height: 1.6; padding: 12px; min-height: 100vh;
+        }
+        .header {
+            text-align: center; padding: 24px 16px;
+            background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+            border-radius: 16px; color: white; margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(46,125,50,0.3);
+        }
+        .header h1 { font-size: 24px; margin-bottom: 8px; letter-spacing: 2px; }
+        .header p { font-size: 14px; opacity: 0.95; }
+        .header .sub { font-size: 12px; opacity: 0.8; margin-top: 8px; }
+
+        .intro {
+            background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-left: 4px solid #4caf50;
+        }
+        .intro h3 { font-size: 16px; color: #2e7d32; margin-bottom: 8px; }
+        .intro p { font-size: 14px; line-height: 1.8; color: #555; }
+
+        .question-card {
+            background: white; border-radius: 14px; padding: 20px 16px;
+            margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .q-number {
+            display: inline-block; background: #4caf50; color: white;
+            padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .q-text { font-size: 16px; color: #333; margin-bottom: 16px; line-height: 1.6; }
+        .q-hint { font-size: 12px; color: #999; margin-bottom: 12px; }
+
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option {
+            background: #f8f9fa; border: 2px solid #e0e0e0; padding: 14px 16px;
+            border-radius: 10px; cursor: pointer; transition: all 0.2s;
+            font-size: 15px; color: #555; display: flex; align-items: center; gap: 10px;
+        }
+        .option:active { transform: scale(0.98); }
+        .option.selected { background: #e8f5e9; border-color: #4caf50; color: #2e7d32; }
+        .option .dot {
+            width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%;
+            flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .option.selected .dot { border-color: #4caf50; background: #4caf50; }
+        .option.selected .dot::after { content: '✓'; color: white; font-size: 14px; font-weight: 700; }
+
+        .btn-area { padding: 20px 0 40px; }
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            font-size: 17px; font-weight: 700; cursor: pointer; letter-spacing: 3px;
+            background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+            color: white; box-shadow: 0 4px 12px rgba(46,125,50,0.4);
+            transition: all 0.2s;
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .result-area { display: none; }
+        .result-area.show { display: block; }
+
+        .result-card {
+            background: white; border-radius: 14px; padding: 20px;
+            margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .result-card h3 { font-size: 17px; color: #2e7d32; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #c8e6c9; }
+        
+        .risk-level {
+            text-align: center; padding: 20px; border-radius: 12px; margin-bottom: 16px;
+        }
+        .risk-level.low { background: #e8f5e9; border: 2px solid #4caf50; }
+        .risk-level.medium { background: #fff3e0; border: 2px solid #ff9800; }
+        .risk-level.high { background: #ffebee; border: 2px solid #f44336; }
+        .risk-level h4 { font-size: 20px; margin-bottom: 8px; }
+        .risk-level.low h4 { color: #2e7d32; }
+        .risk-level.medium h4 { color: #e65100; }
+        .risk-level.high h4 { color: #c62828; }
+        .risk-level p { font-size: 14px; color: #555; }
+
+        .signals-list { padding-left: 0; list-style: none; }
+        .signals-list li {
+            padding: 10px 14px; margin-bottom: 8px; background: #f8f9fa;
+            border-radius: 8px; font-size: 14px; line-height: 1.6; color: #555;
+            border-left: 3px solid #4caf50;
+        }
+
+        .advice-box {
+            background: #f1f8e9; border-left: 4px solid #4caf50;
+            padding: 14px; border-radius: 0 8px 8px 0; margin-top: 12px;
+            font-size: 14px; line-height: 1.8; color: #555;
+        }
+
+        .contact-card {
+            background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+            border-radius: 14px; padding: 20px; text-align: center; color: white;
+            margin-top: 16px;
+        }
+        .contact-card h4 { font-size: 18px; margin-bottom: 10px; }
+        .contact-card p { font-size: 14px; opacity: 0.95; line-height: 1.8; }
+        .contact-card .qr {
+            width: 120px; height: 120px; margin: 16px auto; background: white;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; color: #999;
+        }
+
+        .footer { text-align: center; padding: 16px; font-size: 12px; color: #999; }
+    </style>
+</head>
+<body>
+    <div id="page-form">
+        <div class="header">
+            <h1>🩺 身体信号自测</h1>
+            <p>早发现 · 早调理 · 早健康</p>
+            <div class="sub">通过10个关键身体信号，快速识别健康风险</div>
+        </div>
+
+        <div class="intro">
+            <h3>💡 为什么要关注身体信号？</h3>
+            <p>身体是最好的医生。当出现持续疲劳、睡眠差、消化不好等信号时，说明身体已经在"报警"。本测试通过10个关键信号，帮您快速识别健康风险，及时调理，防患未然。</p>
+        </div>
+
+        <!-- 问题1 -->
+        <div class="question-card">
+            <div class="q-number">问题 1/10</div>
+            <div class="q-text">您是否经常感到疲劳乏力，休息后也难以恢复？</div>
+            <div class="q-hint">💡 持续疲劳是身体亚健康的重要信号</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q1', 0)">
+                    <div class="dot"></div><span>从来没有</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q1', 1)">
+                    <div class="dot"></div><span>偶尔有</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q1', 2)">
+                    <div class="dot"></div><span>经常有</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q1', 3)">
+                    <div class="dot"></div><span>几乎每天</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题2 -->
+        <div class="question-card">
+            <div class="q-number">问题 2/10</div>
+            <div class="q-text">您的睡眠质量如何？是否难以入睡或早醒？</div>
+            <div class="q-hint">💡 睡眠是身体修复的关键时期</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q2', 0)">
+                    <div class="dot"></div><span>睡眠很好</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q2', 1)">
+                    <div class="dot"></div><span>偶尔不好</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q2', 2)">
+                    <div class="dot"></div><span>经常失眠</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q2', 3)">
+                    <div class="dot"></div><span>长期睡眠差</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题3 -->
+        <div class="question-card">
+            <div class="q-number">问题 3/10</div>
+            <div class="q-text">您是否有消化不良、腹胀、便秘或腹泻等问题？</div>
+            <div class="q-hint">💡 肠胃健康直接影响免疫力</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q3', 0)">
+                    <div class="dot"></div><span>消化很好</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q3', 1)">
+                    <div class="dot"></div><span>偶尔不适</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q3', 2)">
+                    <div class="dot"></div><span>经常有问题</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q3', 3)">
+                    <div class="dot"></div><span>长期消化差</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题4 -->
+        <div class="question-card">
+            <div class="q-number">问题 4/10</div>
+            <div class="q-text">您是否经常头痛、头晕或注意力不集中？</div>
+            <div class="q-hint">💡 这些症状可能与压力、睡眠或血压有关</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q4', 0)">
+                    <div class="dot"></div><span>从来没有</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q4', 1)">
+                    <div class="dot"></div><span>偶尔有</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q4', 2)">
+                    <div class="dot"></div><span>经常有</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q4', 3)">
+                    <div class="dot"></div><span>严重影响生活</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题5 -->
+        <div class="question-card">
+            <div class="q-number">问题 5/10</div>
+            <div class="q-text">您的情绪是否容易波动，经常感到焦虑、烦躁或低落？</div>
+            <div class="q-hint">💡 情绪健康是整体健康的重要组成部分</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q5', 0)">
+                    <div class="dot"></div><span>情绪很稳定</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q5', 1)">
+                    <div class="dot"></div><span>偶尔波动</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q5', 2)">
+                    <div class="dot"></div><span>经常有情绪问题</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q5', 3)">
+                    <div class="dot"></div><span>长期情绪低落/焦虑</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题6 -->
+        <div class="question-card">
+            <div class="q-number">问题 6/10</div>
+            <div class="q-text">您是否经常感到关节疼痛或肌肉酸痛？</div>
+            <div class="q-hint">💡 关节健康反映身体炎症水平</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q6', 0)">
+                    <div class="dot"></div><span>没有</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q6', 1)">
+                    <div class="dot"></div><span>偶尔</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q6', 2)">
+                    <div class="dot"></div><span>经常</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q6', 3)">
+                    <div class="dot"></div><span>持续疼痛</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题7 -->
+        <div class="question-card">
+            <div class="q-number">问题 7/10</div>
+            <div class="q-text">您的皮肤是否经常出现过敏、湿疹、痘痘或干燥等问题？</div>
+            <div class="q-hint">💡 皮肤问题往往反映内在健康状态</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q7', 0)">
+                    <div class="dot"></div><span>皮肤很好</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q7', 1)">
+                    <div class="dot"></div><span>偶尔有问题</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q7', 2)">
+                    <div class="dot"></div><span>经常有皮肤问题</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q7', 3)">
+                    <div class="dot"></div><span>长期皮肤问题</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题8 -->
+        <div class="question-card">
+            <div class="q-number">问题 8/10</div>
+            <div class="q-text">您是否比同龄人更容易感冒、感染或生病？</div>
+            <div class="q-hint">💡 免疫力下降是亚健康的重要标志</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q8', 0)">
+                    <div class="dot"></div><span>很少生病</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q8', 1)">
+                    <div class="dot"></div><span>偶尔感冒</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q8', 2)">
+                    <div class="dot"></div><span>经常生病</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q8', 3)">
+                    <div class="dot"></div><span>反复感染</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题9 -->
+        <div class="question-card">
+            <div class="q-number">问题 9/10</div>
+            <div class="q-text">您是否注意到体重莫名增加或减少，且难以控制？</div>
+            <div class="q-hint">💡 体重异常可能反映代谢 or 内分泌问题</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q9', 0)">
+                    <div class="dot"></div><span>体重稳定</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q9', 1)">
+                    <div class="dot"></div><span>轻微波动</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q9', 2)">
+                    <div class="dot"></div><span>明显变化</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q9', 3)">
+                    <div class="dot"></div><span>无法控制的体重变化</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题10 -->
+        <div class="question-card">
+            <div class="q-number">问题 10/10</div>
+            <div class="q-text">您的记忆力或注意力是否明显下降，影响工作和生活？</div>
+            <div class="q-hint">💡 认知功能下降可能与睡眠、压力 or 营养有关</div>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'q10', 0)">
+                    <div class="dot"></div><span>记忆很好</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q10', 1)">
+                    <div class="dot"></div><span>偶尔健忘</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q10', 2)">
+                    <div class="dot"></div><span>经常忘事</span>
+                </div>
+                <div class="option" onclick="selectOption(this, 'q10', 3)">
+                    <div class="dot"></div><span>严重影响生活</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-area">
+            <button class="btn" onclick="submitTest()">📊 查看我的健康风险报告</button>
+        </div>
+    </div>
+
+    <div id="page-result" class="result-area">
+        <div class="header">
+            <h1>📋 您的健康风险报告</h1>
+        </div>
+
+        <div id="result-content"></div>
+
+        <div class="contact-card">
+            <h4>🏥 专业健康咨询</h4>
+            <p>吕勇军【平安金融科技集团】</p>
+            <p>提供：健康检查 + 体重管理 + 保险规划</p>
+            <p style="margin-top: 10px; font-size: 13px;">扫码添加微信，获取个性化健康方案</p>
+            <div class="qr">[微信二维码]</div>
+        </div>
+
+        <div class="footer">
+            本测试仅供健康参考，如有明显不适请及时就医
+        </div>
+    </div>
+
+    <script>
+        let answers = {};
+
+        function selectOption(el, q, val) {
+            const parent = el.parentElement;
+            parent.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            el.classList.add('selected');
+            answers[q] = val;
+        }
+
+        function submitTest() {
+            if (Object.keys(answers).length < 10) {
+                alert('请完成所有10道题目哦~');
+                return;
+            }
+
+            // 计算总分
+            const totalScore = Object.values(answers).reduce((a, b) => a + b, 0);
+            
+            // 判断风险等级
+            let riskLevel, riskClass, riskTitle, riskDesc, advice;
+            
+            if (totalScore <= 5) {
+                riskLevel = '低风险';
+                riskClass = 'low';
+                riskTitle = '✅ 健康状态良好';
+                riskDesc = '您的身体信号整体正常，继续保持健康的生活方式即可。';
+                advice = '<li>保持规律作息，保证7-8小时睡眠</li><li>均衡饮食，多吃蔬菜水果</li><li>每周至少150分钟中等强度运动</li><li>定期体检，预防为主</li>';
+            } else if (totalScore <= 15) {
+                riskLevel = '中低风险';
+                riskClass = 'low';
+                riskTitle = '💚 轻微亚健康';
+                riskDesc = '您有一些轻微的身体信号，建议适当调整生活方式，防患未然。';
+                advice = '<li>改善睡眠质量，避免熬夜</li><li>调整饮食，减少油腻、辛辣食物</li><li>增加运动量，促进新陈代谢</li><li>学会减压，保持情绪稳定</li><li>建议3-6个月体检一次</li>';
+            } else if (totalScore <= 25) {
+                riskLevel = '中高风险';
+                riskClass = 'medium';
+                riskTitle = '⚠️ 明显亚健康';
+                riskDesc = '您的身体发出多个预警信号，建议尽快调整生活方式，必要时就医检查。';
+                advice = '<li>立即调整作息，保证充足睡眠</li><li>改善饮食习惯，必要时咨询营养师</li><li>适度运动，但避免过度疲劳</li><li>管理压力，必要时寻求心理咨询</li><li>建议1-3个月体检，重点关注异常信号</li><li>考虑中医调理，整体改善体质</li>';
+            } else {
+                riskLevel = '高风险';
+                riskClass = 'high';
+                riskTitle = '🚨 健康风险较高';
+                riskDesc = '您的身体发出多个强烈预警信号，建议尽快就医检查，找出根本原因。';
+                advice = '<li>尽快就医，进行全面的身体检查</li><li>根据医生建议，进行针对性治疗或调理</li><li>调整生活方式，避免进一步恶化</li><li>考虑中西医结合治疗</li><li>定期复查，监测健康指标</li><li>必要时购买健康保险，防范健康风险</li>';
+            }
+
+            // 生成异常信号列表
+            const signals = [];
+            if (answers['q1'] >= 2) signals.push('持续疲劳乏力');
+            if (answers['q2'] >= 2) signals.push('睡眠质量差');
+            if (answers['q3'] >= 2) signals.push('消化不良');
+            if (answers['q4'] >= 2) signals.push('头痛/头晕/注意力不集中');
+            if (answers['q5'] >= 2) signals.push('情绪波动大');
+            if (answers['q6'] >= 2) signals.push('关节疼痛/肌肉酸痛');
+            if (answers['q7'] >= 2) signals.push('皮肤问题');
+            if (answers['q8'] >= 2) signals.push('免疫力下降');
+            if (answers['q9'] >= 2) signals.push('体重异常变化');
+            if (answers['q10'] >= 2) signals.push('记忆力/注意力下降');
+
+            // 显示结果页面
+            document.getElementById('page-form').style.display = 'none';
+            document.getElementById('page-result').classList.add('show');
+
+            document.getElementById('result-content').innerHTML = `
+                <div class="result-card">
+                    <div class="risk-level ${riskClass}">
+                        <h4>${riskTitle}</h4>
+                        <p style="font-size: 16px; margin: 10px 0;"><strong>风险等级：${riskLevel}</strong></p>
+                        <p>综合评分：${totalScore}分（满分30分）</p>
+                        <p style="margin-top: 10px;">${riskDesc}</p>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>🔍 检测到的身体信号</h3>
+                    ${signals.length > 0 ? 
+                        `<ul class="signals-list">${signals.map(s => `<li>⚠️ ${s}</li>`).join('')}</ul>
+                         <p style="font-size: 13px; color: #999; margin-top: 10px;">💡 这些信号说明您的身体需要关注和调理</p>` 
+                        : 
+                        '<p style="color: #4caf50; font-weight: 600;">🎉 暂未检测到明显异常信号，请继续保持健康生活方式！</p>'
+                    }
+                </div>
+
+                <div class="result-card">
+                    <h3>💊 健康建议</h3>
+                    <ul class="signals-list">
+                        ${advice}
+                    </ul>
+                    <div class="advice-box">
+                        💡 <strong>重要提醒：</strong>本测试仅供健康参考，不能替代专业医疗诊断。如果您的身体信号持续存在或加重，请务必及时就医，找出根本原因。早发现、早诊断、早治疗是维护健康的关键。
+                    </div>
+                </div>
+            `;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
